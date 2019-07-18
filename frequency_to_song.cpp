@@ -1,5 +1,5 @@
-#include<bits/stdc++.h>
-using namespace std;
+#include<bits/stdc++.h> //includes necessary libraries
+using namespace std; //defines where the 
 #define pds pair<double, string>
 #define mp(a,b) make_pair(a,b)
 #define all(a) a.begin(), a.end()
