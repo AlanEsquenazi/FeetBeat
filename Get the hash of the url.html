@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feetbeat w/ spotify</title>
+</head>
+<body>
+  <h1>Feetbeat with Spotify alpha 1.0</h1>
+  <h2>working on it</h2>
+  <form> 
+    <input type="button" value="Start Music">
+  </form>
+  <p>Play Music</p>
+
+
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script>
+    // Get the hash of the url
+    const hash = window.location.hash
+    .substring(1)
+    .split('&')
+    .reduce(function (initial, item) {
+      if (item) {
+        var parts = item.split('=');
+        initial[parts[0]] = decodeURIComponent(parts[1]);
+      }
+      return initial;
+    }, {});
+    window.location.hash = '';
+
+// Set token
+    const _token = 'BQB-D4GMMQp1ROeEUWX5y0VIKNbFkKrUrlQdG4AnkxdBrt9pv9O7KJz4WX_cT4Jc2IpP6MFJ8Pm7dp5U6x1Tsgzoi1MUKhLP68AtNma7_KcNp1s3h28te9MdZhjxuTvFunupF58quUS_OM1HU8NVTpyT5gpsi4Y-N-V8Hx8PFzDL76KdipBhEk97kw';
+// Set up the Web Playback SDK
+
+    window.onSpotifyPlayerAPIReady = () => {
+      const player = new Spotify.Player({
+        name: 'Web Playback SDK Template',
+        getOAuthToken: cb => { cb(_token); }
+      });
+
+  // Error handling
+      player.on('initialization_error', e => console.error(e));
+      player.on('authentication_error', e => console.error(e));
+      player.on('account_error', e => console.error(e));
+      player.on('playback_error', e => console.error(e));
+
+  // Playback status updates
+      player.on('player_state_changed', state => {
+        console.log(state)
+        $('#current-track').attr('src', state.track_window.current_track.album.images[0].url);
+        $('#current-track-name').text(state.track_window.current_track.name);
+      });
+
+  // Ready
+      player.on('ready', data => {
+        console.log('Ready with Device ID', data.device_id);
+    
+    // Play a track using our new device ID
+        play(data.device_id);
+      });
+
+  // Connect to the player!
+      player.connect();
+    }
+
+// Play a specified track on the Web Playback SDK's device ID
+    function play(device_id) {
+      $.ajax({
+       url: "https://api.spotify.com/v1/me/player/play?device_id=" + device_id,
+       type: "PUT",
+       data: '{"uris": ["spotify:track:5ya2gsaIhTkAuWYEMB0nw5"]}',
+       beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+       success: function(data) { 
+         console.log(data)
+       }
+      });
+    }
+
+  </script>
+</body>
+</html>
