@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Spotify Web Playback SDK Quick Start Tutorial</title>
+  <title>Feetbeat w/ spotify</title>
 </head>
 <body>
-  <h1>Spotify Web Playback SDK Quick Start Tutorial</h1>
-  <h2>Open your console log: <code>View > Developer > JavaScript Console</code></h2>
+  <h1>Feetbeat with Spotify alpha 1.0</h1>
+  <h2>working on it</h2>
   <form> 
-    <input type="button" value="Start machine">
+    <input type="button" value="Start Music">
   </form>
   <p>Play Music</p>
 
@@ -16,20 +16,8 @@
   <script>
     const button = document.querySelector('input');
     const paragraph = document.querySelector('p');
-
-    button.addEventListener('click', updateButton);
-
-    function updateButton() {
-      if (button.value === 'Start machine') {
-        button.value = 'Stop machine';
-        paragraph.textContent = 'The machine has started!';
-      } else {
-        button.value = 'Start machine';
-        paragraph.textContent = 'The machine is stopped.';
-      }
-    }
     window.onSpotifyWebPlaybackSDKReady = () => {
-      const token = '[My Spotify Web API access token]';
+      const token = 'BQB-D4GMMQp1ROeEUWX5y0VIKNbFkKrUrlQdG4AnkxdBrt9pv9O7KJz4WX_cT4Jc2IpP6MFJ8Pm7dp5U6x1Tsgzoi1MUKhLP68AtNma7_KcNp1s3h28te9MdZhjxuTvFunupF58quUS_OM1HU8NVTpyT5gpsi4Y-N-V8Hx8PFzDL76KdipBhEk97kw';
       const player = new Spotify.Player({
         name: 'Web Playback SDK Quick Start Player',
         getOAuthToken: cb => { cb(token); }
@@ -55,10 +43,20 @@
         });
       };
 
-      play({
-        playerInstance: new Spotify.Player({ name: "..." }),
-        spotify_uri: 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr',
-      });
+    function updateButton() {
+      if (button.value === 'Start Music') {
+        button.value = 'Stop Music';
+        play({
+            playerInstance: new Spotify.Player({ name: "..." }),
+            spotify_uri: 'spotify:track:album/7qaA5Yiw56EABhKspyuZvp',
+        });
+        
+      } else {
+        button.value = 'Start Music';
+        
+      }
+    }
+    button.addEventListener('click', updateButton);
 
       // Error handling
       player.addListener('initialization_error', ({ message }) => { console.error(message); });
