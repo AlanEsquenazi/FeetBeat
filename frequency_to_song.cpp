@@ -1,3 +1,5 @@
+#include <avr/io.h>       /* Define pins & ports */
+#include <util/delay.h>   /* built-in time function */
 #include<bits/stdc++.h> //includes necessary libraries
 using namespace std; //defines where the functions used are
 #define pds pair<double, string> //for faster typing
