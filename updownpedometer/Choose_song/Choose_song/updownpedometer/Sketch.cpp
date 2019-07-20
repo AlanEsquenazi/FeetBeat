@@ -3,7 +3,11 @@
 
 /*End of auto generated code by Atmel studio */
 #include <util/delay.h>   /* built-in time function */
-#include<bits/stdc++.h> //includes necessary libraries
+//#include<bits/stdc++.h> //includes necessary libraries
+//#include<iostream.h>
+//#include<set.h>
+#include<vector>
+#include<iomanip>
 using namespace std; //defines where the functions used are
 #define pds pair<double, string> //for faster typing
 #define mp(a,b) make_pair(a,b)

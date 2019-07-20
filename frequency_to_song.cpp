@@ -12,6 +12,7 @@ string range_tester = "aaa";
 vector <string> last_played = {"00","00","00","00","00","00","00","00","00","00","00","00",
 "00","00","00","00","00","00","00","00"}; //vector holding 20 last played songs; starts with dummies
 double step_freq;
+deque<double> last_freqs;
 vector <double> frequencies;//I dont think i need a vector for this
 //the actual frequencies dont matter, just their average
 /*
@@ -76,4 +77,22 @@ int main(){
         //write the new song to the file
 
     }
+if(ElapsedTime>1000){
+	  StartTime=ElapsedTime;
+	  bool ignore = false;
+	  double curr_freq = steps/(ElapsedTime/1000);
+	  if(curr_freq<10){
+		  ignore = true;
+	  }
+		if(last_freqs.size()<10 && !ignore){
+			step_freq += curr_freq/10;
+			last_freqs.push_back(curr_freq); 
+		}else if(!ignore){
+			step_freq += curr_freq/10;
+			step_freq-=last_freqs.front()/10;
+			last_freqs.pop_front();
+			last_freqs.push_back(curr_freq);
+		}
+  }
+
 }
