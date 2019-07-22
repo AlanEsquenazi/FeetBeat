@@ -1,6 +1,4 @@
 #include<bits/stdc++.h> //includes necessary libraries
-#include<chrono>
-#include "SerialPort.h"
 //#include "SerialPort.h"
 using namespace std; //defines where the functions used are
 #define pds pair<double, string> //for faster typing
@@ -14,10 +12,8 @@ vector <string> last_played = {"00","00","00","00","00","00","00","00","00","00"
 "00","00","00","00","00","00","00","00"}; //vector holding 20 last played songs; starts with dummies
 double step_freq;
 deque<double> last_freqs;
-char *port_name = "\\\\.\\COM10";
 double prev_read=0, curr_read=0;
 //String for incoming data
-char incomingData[MAX_DATA_LENGTH];
 int how_many_steps = 0;
 double curr_freq=0;
 int elapsedtime;
@@ -36,11 +32,11 @@ TODO:
 -figure out if i need an extra file to communicate with the Arduino
 -
  */
- //char *port_name = "\\\\.\\COM3";
 //function to choose song
 void decide_song(double frequency){
     double low = frequency-delta; //lower range of the interval
     double high = frequency+delta; //higher range
+    //cout<<"low"<<low<<"high"<<high<<endl;
     //lower and upper bound - return pointer to elements just below and
     //just above the value passed
     auto interval_begin = lower_bound(all(song_list),mp(low, range_tester));
@@ -84,32 +80,19 @@ int main(){
         //calculate new average, save that to step_freq
         //choose a new song with the new step_freq
         //write the new song to the file
-    SerialPort arduino(port_name);
-  if (arduino.isConnected()) cout << "Connection Established" << endl;
-  else cout << "ERROR, check port name";
-  while (arduino.isConnected()){
-    auto start = std::chrono::steady_clock::now();
     //Check if data has been read or not
     //int how_many_steps = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
     //cout<<"passos"<<how_many_steps<<endl;
-    int curr_read = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
-    cout<<"inc_dat"<<incomingData;
-    if(incomingData[0]=='1')how_many_steps++;
-    curr_read = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
-    bool wants_song=false;
-    if(incomingData[0]=='Y') wants_song=true;
     //cout<<"olhaso"<<arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
     //curr_read = curr_read-"0";
     //puts(incomingData);
     //cout<<"inc 0"<<incomingData[0]<<endl;
-    //int slow;
-    //std::cin>>slow;
     //curr_read = incomingData[0]-'0';
     //cout<<"0men0"<<'0'-'0'<<endl;
     //cout<<"putting"<<endl;
     //puts(incomingData);
     cout<<endl;
-    how_many_steps+=curr_read;
+    //how_many_steps+=curr_read;
     //cout<<"currread"<<curr_read<<endl;
     //prints out data
     /*
@@ -121,38 +104,36 @@ int main(){
     prev_read=curr_read;
     //wait a bit
     */
-   auto end = std::chrono::steady_clock::now();
-   //cout<<"start"<<std::chrono::duration_cast<std::chrono::milliseconds>(start).count()<<endl;
-   //cout<<"end"<<std::chrono::duration_cast<std::chrono::milliseconds>(end).count()<<endl;
-   elapsedtime +=(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-   //cout<<"elt132 "<<elapsedtime<<endl;
-   Sleep(10);
-   if(elapsedtime>=1000){
-     cout<<"elt"<<elapsedtime<<endl;
-     double for_freq = how_many_steps;
-     curr_freq = (for_freq/(elapsedtime/1000))*60;
-     how_many_steps = 0;
-     cout<<"bpm"<<curr_freq<<endl;
-     elapsedtime=0;
-     bool ignore = false;
+   while(1){
+   double curr_freq;
+   cout<<"Please enter the frequency"<<endl;
+   cin>>curr_freq;
+   cout<<endl<<"would you like a new song? (y/n)"<<endl;
+   char wants_song;
+   cin>>wants_song;
+   cout<<"curr freq"<<curr_freq<<endl;
+   bool ignore = false;
 	  if(curr_freq<10){
+          //cout<<"ento"<<curr_freq<<endl;
 		  ignore = true;
+          cout<<"frequency too low; probably a break"<<endl;
 	  }
 		if(last_freqs.size()<10 && !ignore){
+            //cout<<"caso 1"<<endl;
 			step_freq += curr_freq/10;
 			last_freqs.push_back(curr_freq); 
 		}else if(!ignore){
+            //cout<<"caso 2"<<endl;
 			step_freq += curr_freq/10;
 			step_freq-=last_freqs.front()/10;
 			last_freqs.pop_front();
 			last_freqs.push_back(curr_freq);
 		}
-    if(wants_song){
-    cout<<"Song for"<<curr_freq<<": "<<endl;
-    decide_song(curr_freq);
-    cout<<endl;
-    wants_song = false;
+    if(wants_song=='Y'||wants_song=='y'){
+        cout<<"Song for"<<step_freq<<": "<<endl;
+        decide_song(step_freq);
+        cout<<endl;
     }
    }
-  }
+
 }
