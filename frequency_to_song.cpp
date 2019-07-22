@@ -1,6 +1,7 @@
-#include <avr/io.h>       /* Define pins & ports */
-#include <util/delay.h>   /* built-in time function */
 #include<bits/stdc++.h> //includes necessary libraries
+#include<chrono>
+#include "SerialPort.h"
+//#include "SerialPort.h"
 using namespace std; //defines where the functions used are
 #define pds pair<double, string> //for faster typing
 #define mp(a,b) make_pair(a,b)
@@ -13,8 +14,13 @@ vector <string> last_played = {"00","00","00","00","00","00","00","00","00","00"
 "00","00","00","00","00","00","00","00"}; //vector holding 20 last played songs; starts with dummies
 double step_freq;
 deque<double> last_freqs;
-vector <double> frequencies;//I dont think i need a vector for this
-//the actual frequencies dont matter, just their average
+char *port_name = "\\\\.\\COM10";
+double prev_read=0, curr_read=0;
+//String for incoming data
+char incomingData[MAX_DATA_LENGTH];
+int how_many_steps = 0;
+double curr_freq=0;
+int elapsedtime;
 /*
 If i receive 0 (low) as a freq, can i recognize that as a break and just ignore?
 I think I could
@@ -30,6 +36,7 @@ TODO:
 -figure out if i need an extra file to communicate with the Arduino
 -
  */
+ //char *port_name = "\\\\.\\COM";
 //function to choose song
 void decide_song(double frequency){
     double low = frequency-delta; //lower range of the interval
@@ -49,11 +56,13 @@ void decide_song(double frequency){
             last_played.erase(last_played.begin());
             last_played.pb((*it).second);
             //here, write song to file
+            cout<<(*it).second<<endl;
             return;
         }
         best_choice++;
     }
     //all songs are in the 20 last_played
+    cout<<(*(last_played.begin()+best_choice))<<endl;
     last_played.erase(last_played.begin()+best_choice);
     last_played.pb(range_tester);
     //here, write song to file
@@ -63,7 +72,6 @@ int main(){
     //here, open doc with frequencies
     //the frequency used when choosing a new song will be the average of the
     //ten last frequencies
-    while(1){
         //TODO: learn how to delay in c++ - 
         //can use sleep(5), sleep_for(nanoseconds(5000000))
         /*
@@ -75,12 +83,55 @@ int main(){
         //calculate new average, save that to step_freq
         //choose a new song with the new step_freq
         //write the new song to the file
-
+    SerialPort arduino(port_name);
+  if (arduino.isConnected()) cout << "Connection Established" << endl;
+  else cout << "ERROR, check port name";
+  while (arduino.isConnected()){
+    auto start = std::chrono::steady_clock::now();
+    //Check if data has been read or not
+    //int how_many_steps = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
+    //cout<<"passos"<<how_many_steps<<endl;
+    int curr_read = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
+    cout<<"inc_dat"<<incomingData;
+    if(incomingData[0]=='1')how_many_steps++;
+    //cout<<"olhaso"<<arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
+    //curr_read = curr_read-"0";
+    //puts(incomingData);
+    //cout<<"inc 0"<<incomingData[0]<<endl;
+    int slow;
+    std::cin>>slow;
+    //curr_read = incomingData[0]-'0';
+    //cout<<"0men0"<<'0'-'0'<<endl;
+    //cout<<"putting"<<endl;
+    //puts(incomingData);
+    cout<<endl;
+    how_many_steps+=curr_read;
+    //cout<<"currread"<<curr_read<<endl;
+    //prints out data
+    /*
+    if(curr_read!=prev_read){
+      cout<<"diff"<<curr_read<<" "<<prev_read<<endl;
+    }else{
+      cout<<"same"<<curr_read<<" "<<prev_read<<endl;
     }
-if(ElapsedTime>1000){
-	  StartTime=ElapsedTime;
-	  bool ignore = false;
-	  double curr_freq = steps/(ElapsedTime/1000);
+    prev_read=curr_read;
+    //wait a bit
+    */
+   auto end = std::chrono::steady_clock::now();
+   //cout<<"start"<<std::chrono::duration_cast<std::chrono::milliseconds>(start).count()<<endl;
+   //cout<<"end"<<std::chrono::duration_cast<std::chrono::milliseconds>(end).count()<<endl;
+   elapsedtime +=(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+   cout<<"elt132 "<<elapsedtime<<endl;
+   Sleep(10);
+   if(elapsedtime>=1000){
+     cout<<"elt"<<elapsedtime<<endl;
+     double for_freq = how_many_steps;
+     curr_freq = (for_freq/(elapsedtime/1000))*60;
+     how_many_steps = 0;
+     cout<<"bpm"<<curr_freq<<endl;
+     elapsedtime=0;
+     bool ignore = false;
+	  double curr_freq = 10;
 	  if(curr_freq<10){
 		  ignore = true;
 	  }
@@ -93,6 +144,6 @@ if(ElapsedTime>1000){
 			last_freqs.pop_front();
 			last_freqs.push_back(curr_freq);
 		}
+   }
   }
-
 }
