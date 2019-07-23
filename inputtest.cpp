@@ -32,6 +32,14 @@ TODO:
 -figure out if i need an extra file to communicate with the Arduino
 -
  */
+int in_last_played(string to_test){
+    for(int i=0;i<20;i++){
+        if(last_played[i]==to_test){
+            return i;
+        }
+    }
+    return 10000;
+}
 //function to choose song
 void decide_song(double frequency){
     double low = frequency-delta; //lower range of the interval
@@ -44,8 +52,32 @@ void decide_song(double frequency){
     //best_choice - song in the interval that was played
     //the longest time ago. in case all songs in the interval 
     //are in the 20 last played, this will be played
-    int best_choice = 0;
+    int best_choice = 19;
     //iterate through the interval
+    if(interval_begin==interval_end && interval_end==song_list.end()){
+      interval_end--;
+      string chosen= (*interval_end).second;
+      cout<<chosen<<endl;
+      if(in_last_played(chosen)>20){
+        last_played.erase(last_played.begin());
+        last_played.pb(chosen);
+      }else{
+        last_played.erase(last_played.begin()+in_last_played(chosen));
+        last_played.pb(chosen);
+      }
+      return;
+    }else if(interval_begin==interval_end && interval_end==song_list.begin()){
+      string chosen= (*song_list.begin()).second;
+      cout<<chosen<<endl;
+      if(in_last_played(chosen)>20){
+        last_played.erase(last_played.begin());
+        last_played.pb(chosen);
+      }else{
+        last_played.erase(last_played.begin()+in_last_played(chosen));
+        last_played.pb(chosen);
+      }
+      return;
+    }
     for(auto it = interval_begin;it != interval_end;it++){
         if(find(all(last_played),((*it).second))==last_played.end()){
             //found a song not among 20 last played!
@@ -55,7 +87,7 @@ void decide_song(double frequency){
             cout<<(*it).second<<endl;
             return;
         }
-        best_choice++;
+         best_choice = min(best_choice, in_last_played((*it).second));
     }
     //all songs are in the 20 last_played
     cout<<(*(last_played.begin()+best_choice))<<endl;
