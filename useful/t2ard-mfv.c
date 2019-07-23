@@ -17,6 +17,13 @@ int last_freqs[10];
 char *last_played[20];
 double valid_freq = 0;
 double delta = 10;
+int where_in_songs(char* name){
+    for(int i=0;i<sizeof(identifiers);i++){
+        if(identifiers[i]==name){
+            return i;
+        }
+    }
+}
 int check_full_played(){
     for(int i=19;i>=0;i--){
         if(last_played[i]=="0"){
