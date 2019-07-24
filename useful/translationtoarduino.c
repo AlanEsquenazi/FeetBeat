@@ -10,13 +10,20 @@ double counter = 0;
 int now_playing = 0, now_last = 30;
 unsigned long StartTime = millis();
 bool going_up = false;
-int bpms[100];
-char *identifiers[100];
-int durations[100];
+int bpms[9];
+char *identifiers[9];
+int durations[9];
 int last_freqs[10];
 char *last_played[20];
 double valid_freq = 0;
 double delta = 10;
+int where_in_songs(char* name){
+    for(int i=0;i<sizeof(identifiers);i++){
+        if(identifiers[i]==name){
+            return i;
+        }
+    }
+}
 int check_full_played(){
     for(int i=19;i>=0;i--){
         if(last_played[i]=="0"){
@@ -46,6 +53,7 @@ void update_last_played(char* to_play){
 char* decide_song(){
     double upper_bound = valid_freq+delta;
     double lower_bound = valid_freq-delta;
+    Serial.println("ub");Serial.println(upper_bound);Serial.println("lb");Serial.println(lower_bound);
     int where_lower=0, where_upper=10000;
     int how_many_songs = sizeof(bpms);
     for(int i=0;i<how_many_songs;i++){
@@ -54,20 +62,29 @@ char* decide_song(){
             break;
         }
     }
-    for(int i=where_lower;i<how_many_songs;i++){
-        if(bpms[i]<=upper_bound){
+    Serial.println("where_lower");Serial.println(where_lower);Serial.println('\n');
+    for(int i=sizeof(bpms);i>where_lower;i--){
+        if(bpms[i]<upper_bound){
             where_upper=i;
             break;
         }
     }
-    if(where_upper==10000){
+    if(upper_bound<(bpms[0]-delta)){
+        where_upper=0;
+        now_playing = 0;now_last=durations[0];
+        update_last_played(identifiers[0]);
+        return identifiers[0];
+    }
+    else if(where_upper==10000){
         where_upper= how_many_songs;
     }
+    Serial.println("where_upper");Serial.println(where_upper);Serial.println('\n');
     int best_choice =19;
     for(int i=lower_bound;i<upper_bound;i++){
         if(in_last_played(identifiers[i])==100000){
             update_last_played(identifiers[i]);
             now_playing = i;now_last=durations[i];
+            Serial.println("i");Serial.println(i);Serial.println('\n');
             return identifiers[i];
         }else{
           if(in_last_played(identifiers[i])<=best_choice){
@@ -76,7 +93,10 @@ char* decide_song(){
             best_choice = min(best_choice, in_last_played(identifiers[i]));
         }
     }
+    int answer = where_in_songs(last_played[best_choice]);  
     update_last_played(last_played[best_choice]);
+    now_playing = answer;now_last=durations[answer];
+    //Serial.println("i");Serial.println(i);Serial.println('\n');
     return last_played[best_choice];
 }
 void update_freq(){
@@ -138,7 +158,7 @@ last_played[10]="0";last_played[11]="0";last_played[12]="0";last_played[13]="0";
 void loop(){
   //read the analog values from the accelerometer
   int zRead = analogRead(zPin);
-  if(zRead>(prevZ+8)){
+  if(zRead>(prevZ+5)){
     if(!going_up){
       going_up = true;
     }
@@ -163,14 +183,15 @@ void loop(){
     Serial.println("counter");Serial.println(counter);Serial.println('\n');
     StartTime=CurrentTime;
     Serial.println("steps");Serial.println(steps);Serial.println('\n');
+    if(steps>=0){
     double curr_freq = (60*steps)/(ElapsedTime/1000);
     Serial.println("currfreq");Serial.println(curr_freq);Serial.println('\n');
     update_flist(curr_freq);
+    }
     if(counter>=durations[now_playing]){
       counter = 0;
       update_freq();
-      decide_song();
-      Serial.println("Now Playing:");Serial.println(now_playing);Serial.println(" ");Serial.println(identifiers[now_playing]);Serial.println('\n');
+      Serial.println("Now Playing:");Serial.println(decide_song());Serial.println(" ");Serial.println(identifiers[now_playing]);Serial.println('\n');
     }
    steps = 0;
   }
