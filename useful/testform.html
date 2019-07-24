@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feetbeat w/ spotify</title>
+</head>
+<body>
+  <h1>Feetbeat with Spotify alpha 1.0</h1>
+  <h2>working on it</h2>
+  <form> 
+    <input id = "song_id" type="text" name="identifier" value="insert identifier"/>
+    <input type="button" value="Start Music">
+  </form>
+  <button onClick="show_name()">Show the name</button>
+  <p>Play Music</p>
+
+
+  
+  <script>
+    const button = document.querySelector('input');
+    const paragraph = document.querySelector('p');
+    function show_name(){
+        console.log(document.getElementById("song_id").value);
+    }
+  </script>
+</body>
+</html>
