@@ -16,6 +16,7 @@ double step_freq;
 deque<double> last_freqs;
 char *port_name = "\\\\.\\COM10";
 double prev_read=0, curr_read=0;
+char t1='1',t2='1',t3='1',t4='1',t5='1';
 //String for incoming data
 char incomingData[MAX_DATA_LENGTH];
 int how_many_steps = 0;
@@ -38,6 +39,14 @@ TODO:
  */
  //char *port_name = "\\\\.\\COM3";
 //function to choose song
+int in_last_played(string to_test){
+    for(int i=0;i<20;i++){
+        if(last_played[i]==to_test){
+            return i;
+        }
+    }
+    return 10000;
+}
 void decide_song(double frequency){
     double low = frequency-delta; //lower range of the interval
     double high = frequency+delta; //higher range
@@ -48,8 +57,24 @@ void decide_song(double frequency){
     //best_choice - song in the interval that was played
     //the longest time ago. in case all songs in the interval 
     //are in the 20 last played, this will be played
-    int best_choice = 0;
+    int best_choice = 19;
     //iterate through the interval
+    /*
+    if(interval_begin==interval_end){
+      cout<<"entro";
+      if(find(all(last_played), (*interval_begin).second)==last_played.end()){
+        last_played.erase(last_played.begin());
+        last_played.pb((*interval_begin).second);
+        cout<<(*interval_begin).second<<endl;
+        return;
+      }else{
+        last_played.erase(last_played.begin()+in_last_played((*interval_begin).second));
+        last_played.pb(range_tester);
+        cout<<(*interval_begin).second<<endl;
+        return;
+      }
+    }
+    */
     for(auto it = interval_begin;it != interval_end;it++){
         if(find(all(last_played),((*it).second))==last_played.end()){
             //found a song not among 20 last played!
@@ -59,9 +84,16 @@ void decide_song(double frequency){
             cout<<(*it).second<<endl;
             return;
         }
-        best_choice++;
+        best_choice = min(best_choice, in_last_played((*it).second));
     }
     //all songs are in the 20 last_played
+    /*
+    if(interval_begin==interval_end){
+      auto j = (*interval_end).second;
+      cout<<j<<endl;
+      return;
+    }
+    */
     cout<<(*(last_played.begin()+best_choice))<<endl;
     last_played.erase(last_played.begin()+best_choice);
     last_played.pb(range_tester);
@@ -92,10 +124,15 @@ int main(){
     //Check if data has been read or not
     //int how_many_steps = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
     //cout<<"passos"<<how_many_steps<<endl;
-    int curr_read = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
+    int curr_read = arduino.readSerialPort(incomingData, 7);
     cout<<"inc_dat"<<incomingData;
-    if(incomingData[0]=='1')how_many_steps++;
-    curr_read = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
+    //cout<<"curr_read"<<curr_read;
+    if(incomingData[0]=='1'&& (incomingData[1]!=t1||incomingData[2]!=t2||incomingData[3]!=t3||incomingData[4]!=t4||incomingData[5]!=t5)){
+      how_many_steps++;
+      cout<<"step";
+      t2=incomingData[2];t3=incomingData[3];t4=incomingData[4];t1=incomingData[1];t5=incomingData[5];
+    }
+    //curr_read = arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
     bool wants_song=false;
     if(incomingData[0]=='Y') wants_song=true;
     //cout<<"olhaso"<<arduino.readSerialPort(incomingData, MAX_DATA_LENGTH);
@@ -108,8 +145,8 @@ int main(){
     //cout<<"0men0"<<'0'-'0'<<endl;
     //cout<<"putting"<<endl;
     //puts(incomingData);
-    cout<<endl;
-    how_many_steps+=curr_read;
+    //cout<<endl;
+    //how_many_steps+=curr_read;
     //cout<<"currread"<<curr_read<<endl;
     //prints out data
     /*
@@ -128,8 +165,9 @@ int main(){
    //cout<<"elt132 "<<elapsedtime<<endl;
    Sleep(10);
    if(elapsedtime>=1000){
-     cout<<"elt"<<elapsedtime<<endl;
+     //cout<<"elt"<<elapsedtime<<endl;
      double for_freq = how_many_steps;
+     cout<<"step count"<<how_many_steps<<endl;
      curr_freq = (for_freq/(elapsedtime/1000))*60;
      how_many_steps = 0;
      cout<<"bpm"<<curr_freq<<endl;
@@ -147,9 +185,11 @@ int main(){
 			last_freqs.pop_front();
 			last_freqs.push_back(curr_freq);
 		}
+    cout<<"wantssong"<<wants_song<<endl;
+    wants_song=true;
     if(wants_song){
-    cout<<"Song for"<<curr_freq<<": "<<endl;
-    decide_song(curr_freq);
+    cout<<"Song for"<<step_freq<<": "<<endl;
+    decide_song(step_freq);
     cout<<endl;
     wants_song = false;
     }

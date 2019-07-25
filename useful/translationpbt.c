@@ -198,6 +198,7 @@ void loop(){
     update_flist(curr_freq);
     }
     if(counter>=durations[now_playing]){
+      Serial.println("counter");Serial.println(counter);Serial.println('\n');
       counter = 0;
       update_freq();
       Serial.println("Now Playing:");Serial.println(decide_song());Serial.println(" ");Serial.println(identifiers[now_playing]);Serial.println('\n');
