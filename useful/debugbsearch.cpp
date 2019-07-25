@@ -1,24 +1,26 @@
 //Analog read pins for accelerometer
 //const int xPin = 0;
 //const int yPin = 1;
-#include <SPI.h>
-#include "Adafruit_BLE_UART.h"
+//#include <SPI.h>
+//#include "Adafruit_BLE_UART.h"
 
-#define ADAFRUITBLE_REQ 10
-#define ADAFRUITBLE_RDY 2
-#define ADAFRUITBLE_RST 9
+//#define ADAFRUITBLE_REQ 10
+//#define ADAFRUITBLE_RDY 2
+//#define ADAFRUITBLE_RST 9
 
-Adafruit_BLE_UART uart = Adafruit_BLE_UART(ADAFRUITBLE_REQ, ADAFRUITBLE_RDY, ADAFRUITBLE_RST);
-const int zPin = 2;
-int prevX = 0;
-int prevY = 0;
-int prevZ = 0;
+//Adafruit_BLE_UART uart = Adafruit_BLE_UART(ADAFRUITBLE_REQ, ADAFRUITBLE_RDY, ADAFRUITBLE_RST);
+//const int zPin = 2;
+//int prevX = 0;
+//int prevY = 0;
+//int prevZ = 0;
+#include<iostream>
+using namespace std;
 double steps = -1;
 double counter = 0;
 int now_playing = 0, now_last = 30;
-unsigned long StartTime = millis();
+unsigned long StartTime = 0;
 bool going_up = false;
-int bpms[9];
+int bpms[8];
 char *identifiers[9];
 int durations[9];
 int last_freqs[10];
@@ -30,7 +32,7 @@ int lower_bound1(int low, int high, int value){
     //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<endl;
     if(value<=bpms[0]){
         return 0;
-    }if(value>=bpms[9]) return 9;
+    }if(value>=bpms[8]) return 9;
     if(bpms[middle]<=value && bpms[middle+1]>value){
     //    cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"r"<<endl;
         return middle;
@@ -45,21 +47,21 @@ int lower_bound1(int low, int high, int value){
 int upper_bound1(int low, int high, int value){
     int middle = (low+high)/2;
     //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"up"<<endl;
-    if(value>=bpms[9]){
+    if(value>=bpms[8]){
         //printf("%d %d %d",100, value, bpms[10]);
         return 9;
     }
     if(value<bpms[0]) return 0;
     if(bpms[middle]>value && bpms[middle-1]<=value){
-        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"r"<<endl;
+        cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"r"<<endl;
         //printf("%d %d", 1000, middle);
         return middle;
     }else if(bpms[middle-1]<=value){
-        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"right"<<endl;
+        cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"right"<<endl;
         //printf("%d %d", 763, middle);
         upper_bound1(middle, high, value);
     }else{
-        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"left"<<endl;
+        cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"left"<<endl;
         //printf("%d %d %d", 12567, middle, 999);
         upper_bound1(low, middle, value);
     }
@@ -100,44 +102,50 @@ void update_last_played(char* to_play){
 char* decide_song(){
     double upper_bound = valid_freq+delta;
     double lower_bound = valid_freq-delta;
-    Serial.println("ub");Serial.println(upper_bound);Serial.println("lb");Serial.println(lower_bound);
+    cout<<"lb"<<lower_bound<<"up"<<upper_bound<<endl;
+//    Serial.println("ub");Serial.println(upper_bound);Serial.println("lb");Serial.println(lower_bound);
     int where_lower=0, where_upper=10000;
-    int how_many_songs = sizeof(bpms);
-    where_lower = lower_bound1(0,9,lower_bound);
-    where_upper = upper_bound1(0,9,upper_bound);
-    /*
+    int how_many_songs = 8;
     for(int i=0;i<how_many_songs;i++){
         if(bpms[i]>=lower_bound){
             where_lower=i;
             break;
         }
     }
-    Serial.println("where_lower");Serial.println(where_lower);Serial.println('\n');
-    for(int i=sizeof(bpms);i>where_lower;i--){
-        if(bpms[i]<upper_bound){
+  //  Serial.println("where_lower");Serial.println(where_lower);Serial.println('\n');
+    cout<<"vaientrar";
+    for(int i=how_many_songs;i>=where_lower;i--){
+        cout<<"i"<<i<<"bpmsi"<<bpms[i]<<"up"<<upper_bound<<endl;
+        if(bpms[i]<=upper_bound){
+            cout<<"achou"<<i<<endl;
             where_upper=i;
             break;
         }
     }
     if(upper_bound<(bpms[0]-delta)){
+        cout<<"eh";
         where_upper=0;
         now_playing = 0;now_last=durations[0];
         update_last_played(identifiers[0]);
         return identifiers[0];
     }
     else if(where_upper==10000){
+        cout<<"eh2";
         where_upper= how_many_songs;
     }
-    */
-    Serial.println("where_upper");Serial.println(where_upper);Serial.println('\n');
-    int best_choice =19;
-    for(int i=lower_bound;i<=upper_bound;i++){
-        if(in_last_played(identifiers[i])==100000){
+    //Serial.println("where_upper");Serial.println(where_upper);Serial.println('\n');
+    int best_choice = 19;
+    cout<<"wl"<<where_lower<<"wu"<<where_upper<<endl;
+    for(int i=where_lower;i<=where_upper;i++){
+        cout<<"looopando"<<endl;
+        if(in_last_played(identifiers[i])==10000){
             update_last_played(identifiers[i]);
             now_playing = i;now_last=durations[i];
-            Serial.println("i");Serial.println(i);Serial.println('\n');
+      //      Serial.println("i");Serial.println(i);Serial.println('\n');
+      cout<<"retornou"<<i<<" "<<identifiers[i];
             return identifiers[i];
         }else{
+            cout<<"caso2"<<endl;
           if(in_last_played(identifiers[i])<=best_choice){
             now_playing=i;now_last=durations[i];
           }
@@ -150,17 +158,17 @@ char* decide_song(){
     //Serial.println("i");Serial.println(i);Serial.println('\n');
     return last_played[best_choice];
 }
-void update_freq(){
-    valid_freq = 0;
+double update_freq(){
+    double vf = 0;
     int nonzero = 10;
     for(int i=0;i<10;i++){
-        if(last_freqs[i]<10){
+        if(last_freqs[i]==0){
             nonzero--;
         }
     }
     for(int i=0;i<10;i++){
-        if(last_freqs[i]>=10){
-            valid_freq += last_freqs[i]/nonzero;
+        if(last_freqs[i]!=0){
+            vf += last_freqs[i]/nonzero;
         }
     }
 }
@@ -170,8 +178,7 @@ void update_flist(double curr_freq){
         }
         last_freqs[9]=curr_freq;
 }
-void setup(){
-  bpms[0] = 60;
+int main(){bpms[0] = 60;
   identifiers[0] = "60 bpm-1";
   durations[0]=3;
   bpms[1] = 60;
@@ -202,55 +209,14 @@ void setup(){
 last_freqs[2]=0;last_freqs[3]=0;last_freqs[4]=0;last_freqs[5]=0;last_freqs[6]=0;last_freqs[7]=0;last_freqs[8]=0;last_freqs[9]=0;
 last_played[0]="0";last_played[1]="0";last_played[2]="0";last_played[3]="0";last_played[4]="0";last_played[5]="0";last_played[6]="0";last_played[7]=0;last_played[8]="0";last_played[9]="0";
 last_played[10]="0";last_played[11]="0";last_played[12]="0";last_played[13]="0";last_played[14]="0";last_played[15]="0";last_played[16]="0";last_played[17]=0;last_played[18]="0";last_played[19]="0";
-    uart.setDeviceName("Fetbet"); /* 7 characters max! */
-  uart.begin();
-  Serial.begin(9600); 
-}
 
-void loop(){
-  //read the analog values from the accelerometer
-  int zRead = analogRead(zPin);
-  if(zRead>(prevZ+5)){
-    if(!going_up){
-      going_up = true;
+    cout<<bpms[0];
+    for(int i=0;i<9;i++){
+        cout<<"musica"<<bpms[i]<<' '<<identifiers[i]<<' '<<durations[i]<<endl;
     }
-  }else{
-    if(going_up){
-      going_up = false;
-      steps++;
+    for(int i=0;i<10;i++){
+        last_freqs[i] = random(230);
     }
-  }
-  //Output read values to Serial monitor
-  //Serial.print(" | z: ");
-  //Serial.println(zRead); 
-  //Serial.println("Steps");Serial.println(steps);Serial.println('\n');
-  //Serial.println("np");Serial.println(now_playing);
-  //Serial.println("playing out");Serial.println(identifiers[now_playing]);Serial.println("lasts for");Serial.println(durations[now_playing]);Serial.println('\n');
-  prevZ = zRead;
-  unsigned long CurrentTime = millis();
-  unsigned long ElapsedTime = CurrentTime - StartTime;
-  //Serial.println("elt");Serial.println(ElapsedTime);Serial.println('\n');Serial.println("stt");Serial.println(StartTime);Serial.println('\n');Serial.println("curt");Serial.println(CurrentTime);
-  if(ElapsedTime>1000){
-    counter+=(ElapsedTime/1000);
-    Serial.println("counter");Serial.println(counter);Serial.println('\n');
-    StartTime=CurrentTime;
-    Serial.println("steps");Serial.println(steps);Serial.println('\n');
-    if(steps>=0){
-    double curr_freq = 2*(60*steps)/(ElapsedTime/1000);
-    Serial.println("currfreq");Serial.println(curr_freq);Serial.println('\n');
-    update_flist(curr_freq);
-    }
-    if(counter>=durations[now_playing]){
-      Serial.println("counter");Serial.println(counter);Serial.println('\n');
-      counter = 0;
-      update_freq();
-      Serial.println("Now Playing:");Serial.println(decide_song());Serial.println(" ");Serial.println(identifiers[now_playing]);Serial.println('\n');
-      uart.write('p');uart.write('l');uart.write('a');uart.write('y');
-      for(int i=0;i<strlen(identifiers[now_playing]);i++){
-          uart.write(identifiers[now_playing][i]);
-      }
-    }
-   steps = 0;
-  }
-  //delay(200); //slow down the serial display to be able to read easier
-} 
+    char* j = decide_song();
+    cout<<j<<endl;
+}
