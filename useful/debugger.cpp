@@ -27,6 +27,45 @@ int last_freqs[10];
 char *last_played[20];
 double valid_freq = 0;
 double delta = 10;
+int lower_bound1(int low, int high, int value){
+    int middle = (low+high)/2;
+    //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<endl;
+    if(value<=bpms[0]){
+        return 0;
+    }if(value>=bpms[8]) return 8;
+    if(bpms[middle]<=value && bpms[middle+1]>value){
+    //    cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"r"<<endl;
+        return middle;
+    }else if(bpms[middle+1]<=value){
+      //  cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"right"<<endl;
+        lower_bound1(middle, high, value);
+    }else{
+        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"left"<<endl;
+        lower_bound1(low, middle, value);
+    }
+}
+int upper_bound1(int low, int high, int value){
+    int middle = (low+high)/2;
+    //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"up"<<endl;
+    if(value>=bpms[8]){
+        //printf("%d %d %d",100, value, bpms[10]);
+        return 8;
+    }
+    if(value<bpms[0]) return 0;
+    if(bpms[middle]>value && bpms[middle-1]<=value){
+        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"r"<<endl;
+        //printf("%d %d", 1000, middle);
+        return middle;
+    }else if(bpms[middle-1]<=value){
+        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"right"<<endl;
+        //printf("%d %d", 763, middle);
+        upper_bound1(middle, high, value);
+    }else{
+        //cout<<"low"<<low<<"high"<<high<<"low"<<"mid"<<middle<<"left"<<endl;
+        //printf("%d %d %d", 12567, middle, 999);
+        upper_bound1(low, middle, value);
+    }
+}
 int where_in_songs(char* name){
     for(int i=0;i<sizeof(identifiers);i++){
         if(identifiers[i]==name){
@@ -63,10 +102,13 @@ void update_last_played(char* to_play){
 char* decide_song(){
     double upper_bound = valid_freq+delta;
     double lower_bound = valid_freq-delta;
-    cout<<"lb"<<lower_bound<<"up"<<upper_bound<<endl;
+    //cout<<"lb"<<lower_bound<<"up"<<upper_bound<<endl;
 //    Serial.println("ub");Serial.println(upper_bound);Serial.println("lb");Serial.println(lower_bound);
     int where_lower=0, where_upper=10000;
+    where_lower=lower_bound1(0,9,lower_bound);
+    where_upper=upper_bound1(0,9,upper_bound);
     int how_many_songs = 8;
+    /*
     for(int i=0;i<how_many_songs;i++){
         if(bpms[i]>=lower_bound){
             where_lower=i;
@@ -94,19 +136,20 @@ char* decide_song(){
         cout<<"eh2";
         where_upper= how_many_songs;
     }
+    */
     //Serial.println("where_upper");Serial.println(where_upper);Serial.println('\n');
     int best_choice = 19;
-    cout<<"wl"<<where_lower<<"wu"<<where_upper<<endl;
+    //cout<<"wl"<<where_lower<<"wu"<<where_upper<<endl;
     for(int i=where_lower;i<=where_upper;i++){
-        cout<<"looopando"<<endl;
+        //cout<<"looopando"<<endl;
         if(in_last_played(identifiers[i])==10000){
             update_last_played(identifiers[i]);
             now_playing = i;now_last=durations[i];
       //      Serial.println("i");Serial.println(i);Serial.println('\n');
-      cout<<"retornou"<<i<<" "<<identifiers[i];
+      //cout<<"retornou"<<i<<" "<<identifiers[i];
             return identifiers[i];
         }else{
-            cout<<"caso2"<<endl;
+            //cout<<"caso2"<<endl;
           if(in_last_played(identifiers[i])<=best_choice){
             now_playing=i;now_last=durations[i];
           }

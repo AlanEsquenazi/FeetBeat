@@ -214,9 +214,7 @@ last_played[10]="0";last_played[11]="0";last_played[12]="0";last_played[13]="0";
     for(int i=0;i<9;i++){
         cout<<"musica"<<bpms[i]<<' '<<identifiers[i]<<' '<<durations[i]<<endl;
     }
-    for(int i=0;i<10;i++){
-        last_freqs[i] = random(230);
-    }
+    valid_freq = 100;
     char* j = decide_song();
     cout<<j<<endl;
 }
